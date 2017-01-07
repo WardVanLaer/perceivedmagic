@@ -56,7 +56,7 @@ def start(template,image,size):
         mask=100*mask/np.max(mask)
     return mask
 #vid
-cap= cv2.VideoCapture('vid_hands.mov')
+cap= cv2.VideoCapture('vids/test1.mov')
 ret,image=cap.read()
 
 show(image)

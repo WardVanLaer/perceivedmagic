@@ -1,18 +1,34 @@
 import numpy as np
 import cv2
+import imutils
 from matplotlib import pyplot as plt
 from skimage.measure import compare_ssim as ssim
 
-cap= cv2.VideoCapture('vid_hands.mov')
+cap= cv2.VideoCapture('vids/test1.mov')
 HIST_SIZE=10
 HIST_THRESH=100
 ret,previous=cap.read()
 previous=cv2.resize(previous, (200,130), fx=0.5, fy=0.5)
-loc1=[(50,85),(70,110)]
-loc2=[(75,55),(95,90)]
-objects=[loc1,]
+loc1=[(30,80),(55,105)]
+loc2=[(80,75),(105,100)]
+objects=[loc1,loc2]
 histograms=[]
 
+
+def rotateImage(image, angle,center):
+  rot_mat = cv2.getRotationMatrix2D(center,angle,1.0)
+  result = cv2.warpAffine(image, rot_mat, (image.shape[1],image.shape[0]),flags=cv2.INTER_LINEAR)
+  return result
+
+
+def rotatedRect(img,loc,theta):
+    start,stop=loc
+    size=(stop[0]-start[0],stop[1]-start[1])
+    rect=((start[0]+size[0]/2,start[1]+size[1]/2),size,theta)
+    box = cv2.cv.BoxPoints(rect)
+    box = np.int0(box)
+    cv2.drawContours(img,[box],0,(0,0,255),2)
+    return img
 
 def show(img):
     cv2.imshow('imshow',img)
@@ -23,9 +39,13 @@ def trackObject(location,previous,now):
     now=cv2.cvtColor(now,cv2.COLOR_BGR2GRAY)
     start=location[0]
     stop=location[1]
+    size=stop[0]-start[0],stop[1]-start[1]
+    center=start[0]+size[0]/2,start[1]+size[1]/2
     template=previous[start[1]:stop[1],start[0]:stop[0]]
-    for step in [8,4,2,1]:
-        start,stop=SS(step,template,now,start)
+    for angle in [10,0]:
+        for step in [8,4,2,1]:
+            now=rotateImage(now,5,center)
+            start,stop=SS(step,template,now,start)
     return (start,stop)
     
 
@@ -87,7 +107,8 @@ while(True):
  #   now=cv2.blur(now,(5,5))
     for i in range(0,len(objects)):
         loc=objects[i]
-        cv2.rectangle(previous, loc[0], loc[1], (0,255,255), 1)
+ #       previous=rotatedRect(previous,loc,5)
+        cv2.rectangle(previous, loc[0],loc[1], (0,255,255), 1)
         objects[i]=trackObject(loc,previous,now)
     objects = [x for x in objects if not check(now,x,histograms[objects.index(x)])]
     cv2.imshow('frame',previous)
