@@ -56,14 +56,13 @@ def start(template,image,size):
         mask=100*mask/np.max(mask)
     return mask
 #vid
-cap= cv2.VideoCapture('vid_hands.mov')
+cap= cv2.VideoCapture('vids/test8.mov')
 ret,image=cap.read()
 
-show(image)
-mypath='templates'
+mypath='templates_balls'
 files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 #image = cv2.imread('img2.png')
-size=60
+size=100
 mask=None
 for f in files:
     if f[0]!='.':

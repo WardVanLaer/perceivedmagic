@@ -16,8 +16,7 @@ upperskinYCC = np.array([255,180,135],np.uint8)
 lowerball = np.array([0,200,180],np.uint8)
 upperball = np.array([10,255,255],np.uint8)
 skinbound=140
-cap= cv2.VideoCapture('vid2.mov')
-cap= cv2.VideoCapture('vid_hands.mov')
+cap= cv2.VideoCapture('vids/test1.mov')
 min_area=3000
 HAND_AREA=0.01
 thresh=0.5
@@ -48,6 +47,7 @@ def ball(frame):
     #remove small errors in background
     ballmask = cv2.inRange(converted, lowerball, upperball)
     ballmask = cv2.erode(ballmask,None,iterations = 1)
+    cv2.imshow('ball',ballmask)
     #iterate over balls
     (cnts, cmask) = cv2.findContours(ballmask, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     for c in cnts:
@@ -66,7 +66,6 @@ def hand(frame):
         print(bound)
         if bound> HAND_AREA:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 0), 1)
-
     return frame
                  
 
@@ -88,18 +87,14 @@ def skinColor(frame):
     #method 3
     Ycrcb = cv2.cvtColor(frame, cv2.COLOR_BGR2YCR_CB)
     skin3 = cv2.inRange(Ycrcb, lowerskinYCC, upperskinYCC)
-    """
-    cv2.imshow('frame2',skin2)
-    cv2.imshow('frame3',skin3)
-    """
+    cv2.imshow('skin2',skin2)
+    cv2.imshow('skin3',skin3)
     s=np.uint8((skin3/2+skin2/2))
     erode = cv2.erode(s,None,iterations = 4)
     dill  = cv2.dilate(erode,None,iterations =4)    
     dill=cv2.inRange(dill,150,256)
     return dill
 
-def skinProb(frame):
-    return frame
 
 
 def normalize(frame):
@@ -128,6 +123,7 @@ while(True):
     fg=foreground(now)
     balls=ball(now)
     hands=hand(now)
+    skin=skinColor(now)
     m=movement(now,p[i])
  #   cv2.imshow('frame',balls)
     """
@@ -135,7 +131,7 @@ while(True):
     edges=cv2.Canny(now,100,200)
     dill  = cv2.dilate(edges,None,iterations = 2)
     """
-    cv2.imshow('frame',hands)
+    cv2.imshow('frame',frame)
     k=cv2.waitKey(5)
     if k==32:
         cv2.waitKey(-1)
